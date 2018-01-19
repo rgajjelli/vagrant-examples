@@ -1,0 +1,54 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+         #Vagrant -  with master
+
+        config.vm.define "master" do |subconfig|
+                 subconfig.vm.box = "centos/7"
+                 subconfig.vm.hostname = 'master'
+                 subconfig.vm.network :private_network, ip: "10.0.0.10"
+
+                subconfig.vm.provision "shell", inline: <<-SHELL
+                        sudo yum -y install epel-release
+                        sudo yum -y install python-pip
+                        sudo pip install --upgrade pip
+                        sudo pip install six==1.4
+                SHELL
+
+        end
+
+         #Vagrant -  with node01
+
+        config.vm.define "node01" do |subconfig|
+                 subconfig.vm.box = "centos/7"
+                 subconfig.vm.hostname = 'node01'
+                 subconfig.vm.network :private_network, ip: "10.0.0.11"
+
+                subconfig.vm.provision "shell", inline: <<-SHELL
+                        sudo yum -y install epel-release
+                        sudo yum -y install java
+                SHELL
+
+        end
+
+        #Vagrant -  with node02
+
+        config.vm.define "node02" do |subconfig|
+                 subconfig.vm.box = "bento/ubuntu-16.04"
+                 subconfig.vm.hostname = 'node02'
+                 subconfig.vm.network :private_network, ip: "10.0.0.12"
+		 subconfig.vm.network :forwarded_port, guest:8080, host:9100 
+                subconfig.vm.provision "shell", inline: <<-SHELL
+                        sudo apt-get update
+                        sudo apt-get install -y unzip openjdk-8-jre-headless
+                        cd /vagrant
+                        sudo apt-get install -y tomcat7
+                        sudo rm /etc/default/tomcat7
+                        sudo cp /vagrant/tomcat7 /etc/default/
+                        rm -rf /var/lib/tomcat7/webapps/ROOT
+                SHELL
+
+        end
+end
